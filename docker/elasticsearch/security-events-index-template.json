@@ -1,0 +1,74 @@
+{
+  "index_patterns": ["sentinel-security-events-*"],
+  "priority": 500,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "message": { "type": "text" },
+        "event": {
+          "dynamic": "strict",
+          "properties": {
+            "action": { "type": "keyword" },
+            "category": { "type": "keyword" },
+            "dataset": { "type": "keyword" },
+            "kind": { "type": "keyword" },
+            "outcome": { "type": "keyword" },
+            "provider": { "type": "keyword" },
+            "severity": { "type": "integer" },
+            "type": { "type": "keyword" }
+          }
+        },
+        "host": {
+          "dynamic": "strict",
+          "properties": {
+            "hostname": { "type": "keyword" },
+            "ip": { "type": "ip" },
+            "name": { "type": "keyword" }
+          }
+        },
+        "observer": {
+          "dynamic": "strict",
+          "properties": {
+            "name": { "type": "keyword" },
+            "type": { "type": "keyword" }
+          }
+        },
+        "related": {
+          "dynamic": "strict",
+          "properties": {
+            "ip": { "type": "ip" },
+            "user": { "type": "keyword" }
+          }
+        },
+        "rule": {
+          "dynamic": "strict",
+          "properties": {
+            "id": { "type": "keyword" },
+            "name": { "type": "keyword" }
+          }
+        },
+        "source": {
+          "dynamic": "strict",
+          "properties": {
+            "ip": { "type": "ip" },
+            "port": { "type": "integer" }
+          }
+        },
+        "user": {
+          "dynamic": "strict",
+          "properties": {
+            "domain": { "type": "keyword" },
+            "id": { "type": "keyword" },
+            "name": { "type": "keyword" }
+          }
+        }
+      }
+    }
+  }
+}

@@ -8,6 +8,7 @@ services:
       APP_NAME: Sentinel Copilot
       APP_ENV: development
       APP_VERSION: 0.1.0
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     depends_on:
@@ -93,6 +94,26 @@ services:
     networks:
       - sentinel
 
+  security-event-template-setup:
+    image: curlimages/curl:8.10.1
+    volumes:
+      - ./docker/elasticsearch/security-events-index-template.json:/templates/security-events-index-template.json:ro,Z
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - >-
+        curl --fail --silent --show-error
+        -X PUT
+        -H 'Content-Type: application/json'
+        --data-binary @/templates/security-events-index-template.json
+        http://elasticsearch:9200/_index_template/sentinel-security-events
+    restart: "no"
+    networks:
+      - sentinel
+
   logstash:
     image: docker.elastic.co/logstash/logstash:8.15.5
     environment:
@@ -104,8 +125,8 @@ services:
       - logstash_data:/usr/share/logstash/data
       - ./docker/logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro,Z
     depends_on:
-      elasticsearch:
-        condition: service_healthy
+      security-event-template-setup:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:9600/ > /dev/null"]
       interval: 15s

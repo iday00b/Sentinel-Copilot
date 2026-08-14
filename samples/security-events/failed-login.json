@@ -1,0 +1,37 @@
+{
+  "@timestamp": "2026-08-14T08:30:00Z",
+  "message": "Failed SSH login for account admin from 203.0.113.42",
+  "event": {
+    "kind": "event",
+    "category": ["authentication"],
+    "type": ["start", "denied"],
+    "action": "ssh_login",
+    "outcome": "failure",
+    "severity": 6,
+    "dataset": "linux.auth",
+    "provider": "sshd"
+  },
+  "host": {
+    "name": "web-01",
+    "hostname": "web-01"
+  },
+  "observer": {
+    "name": "web-01",
+    "type": "host"
+  },
+  "source": {
+    "ip": "203.0.113.42",
+    "port": 48219
+  },
+  "user": {
+    "name": "admin"
+  },
+  "related": {
+    "ip": ["203.0.113.42"],
+    "user": ["admin"]
+  },
+  "rule": {
+    "id": "AUTH-SSH-FAILED-LOGIN",
+    "name": "SSH failed login"
+  }
+}
