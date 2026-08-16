@@ -1,0 +1,55 @@
+{
+  "index_patterns": ["sentinel-alerts-*"],
+  "priority": 500,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "created_at": { "type": "date" },
+        "updated_at": { "type": "date" },
+        "alert_id": { "type": "keyword" },
+        "fingerprint": { "type": "keyword" },
+        "status": { "type": "keyword" },
+        "severity": { "type": "integer" },
+        "title": { "type": "text" },
+        "message": { "type": "text" },
+        "rule": {
+          "dynamic": "strict",
+          "properties": {
+            "id": { "type": "keyword" },
+            "name": { "type": "keyword" },
+            "version": { "type": "integer" }
+          }
+        },
+        "source_event": {
+          "dynamic": "strict",
+          "properties": {
+            "id": { "type": "keyword" },
+            "index": { "type": "keyword" },
+            "timestamp": { "type": "date" }
+          }
+        },
+        "entities": {
+          "dynamic": "strict",
+          "properties": {
+            "host": { "type": "keyword" },
+            "user": { "type": "keyword" },
+            "source_ip": { "type": "ip" }
+          }
+        },
+        "mitre": {
+          "dynamic": "strict",
+          "properties": {
+            "tactic": { "type": "keyword" },
+            "technique": { "type": "keyword" }
+          }
+        }
+      }
+    }
+  }
+}

@@ -5,9 +5,13 @@ import {
   fetchRecentSecurityEvents,
   SecurityEventsApiError,
 } from "./api/security-events";
+import { fetchAlertSummary } from "./api/alerts";
+import AlertsWorkspace from "./components/AlertsWorkspace";
+import type { AlertSummary } from "./types/alerts";
 import type { EventField, SecurityEvent } from "./types/security-events";
 
 type RequestState = "loading" | "refreshing" | "ready" | "error";
+type WorkspaceView = "overview" | "alerts";
 type IconName = "activity" | "alert" | "host" | "shield";
 
 const RECENT_EVENT_LIMIT = 50;
@@ -107,6 +111,8 @@ function App() {
   const [requestState, setRequestState] = useState<RequestState>("loading");
   const [errorMessage, setErrorMessage] = useState<string>();
   const [lastUpdated, setLastUpdated] = useState<Date>();
+  const [workspaceView, setWorkspaceView] = useState<WorkspaceView>("overview");
+  const [alertSummary, setAlertSummary] = useState<AlertSummary>();
   const activeRequest = useRef<AbortController>();
 
   const loadEvents = useCallback(async (initial = false) => {
@@ -117,8 +123,12 @@ function App() {
     setErrorMessage(undefined);
 
     try {
-      const response = await fetchRecentSecurityEvents(RECENT_EVENT_LIMIT, controller.signal);
+      const [response, summary] = await Promise.all([
+        fetchRecentSecurityEvents(RECENT_EVENT_LIMIT, controller.signal),
+        fetchAlertSummary(controller.signal).catch(() => undefined),
+      ]);
       setEvents(response.events);
+      if (summary) setAlertSummary(summary);
       setLastUpdated(new Date());
       setRequestState("ready");
     } catch (error) {
@@ -150,12 +160,14 @@ function App() {
       const host = firstValue(event.host?.name, event.host?.hostname, ...fieldValues(event.host?.ip));
       if (host) uniqueHosts.add(host);
     }
+    const activeAlerts = alertSummary?.open ?? failures;
 
     return [
       { label: "Events in view", value: events.length, icon: "activity" as const, tone: "cyan" },
       { label: "Failed outcomes", value: failures, icon: "alert" as const, tone: "red" },
       { label: "High severity", value: highSeverity, icon: "shield" as const, tone: "amber" },
       { label: "Unique hosts", value: uniqueHosts.size, icon: "host" as const, tone: "violet" },
+      { label: "Active alerts", value: activeAlerts, icon: "alert" as const, tone: "amber" },
     ];
   }, [events]);
 
@@ -172,6 +184,7 @@ function App() {
         <nav aria-label="Primary navigation">
           <p className="nav-label">Workspace</p>
           <span className="nav-item active"><Icon name="activity" />Overview</span>
+          <button className="nav-item" onClick={() => setWorkspaceView("alerts")}><Icon name="alert" />Alerts</button>
           <span className="nav-item"><Icon name="alert" />Event stream</span>
           <p className="nav-label">Operations</p>
           <span className="nav-item muted"><Icon name="shield" />Investigations<small>Soon</small></span>
@@ -183,6 +196,7 @@ function App() {
       </aside>
 
       <main className="dashboard">
+        {workspaceView === "alerts" && <AlertsWorkspace onSummaryChange={setAlertSummary} />}
         <header className="topbar">
           <div>
             <p className="eyebrow">Security operations</p>
